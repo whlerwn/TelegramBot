@@ -1,7 +1,6 @@
 package service.impl;
 
 import entity.Report;
-import entity.User;
 import service.ReportService;
 
 public class ReportServiceImpl implements ReportService {

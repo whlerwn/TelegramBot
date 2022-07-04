@@ -159,14 +159,14 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
     /**
      * При вызове данного метода телеграм-бот отправляет сообщение выбранному пользователю
      * @param chatId уникальный номер пользователя, которому бот будет отправлять сообщение
-     * @param string сообщение, которое будет отправлено пользователю
+     * @param text сообщение, которое будет отправлено пользователю
      */
-    private void sendMessageToClient(String chatId, String string) {
+    private void sendMessageToClient(String chatId, String text) {
         try {
             execute(
                     SendMessage.builder()
                             .chatId(chatId)
-                            .text(string)
+                            .text(text)
                             .build()
             );
         } catch (TelegramApiException e) {
@@ -186,16 +186,14 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
         roleModeService.setRole(message.getChatId(), newRole);
         System.out.println(message.getChatId());
         if (newRole == Role.ADMIN) {
-            simpleBotAnswer(message, """
-                            Теперь ты админ. Чтобы задать своё имя, используй команду /setadminname.   
-                            Как зарегистрировать клиента (выполнить поэтапно):
-                            1. Команда /registration и ввод уникального номера клиента (получить при запуске бота клиентом)
-                            2. Команда /setusername для ввода имени клиента
-                            3. Команда /setrole для присвоения роли клиенту
-                            4. Команда /setgroup для присвоения группы клиенту.
-                            После этого клиент будет зарегистрирован.
-
-                            *Остальные команды и их описание можно найти в меню или с помощью символа "/".""");
+            simpleBotAnswer(message, "Теперь ты админ. Чтобы задать своё имя, используй команду /setadminname.\n" +
+                    "Как зарегистрировать клиента (выполнить поэтапно):\n" +
+                    "1. Команда /registration и ввод уникального номера клиента (получить при запуске бота клиентом)\n" +
+                    "2. Команда /setusername для ввода имени клиента\n" +
+                    "3. Команда /setrole для присвоения роли клиенту\n" +
+                    "4. Команда /setgroup для присвоения группы клиенту.\n" +
+                    "После этого клиент будет зарегистрирован.\n\n" +
+                    "*Остальные команды и их описание можно найти в меню или с помощью символа");
             System.out.println(newRole);
             userService.setChatId(admin, String.valueOf(message.getChatId()));
             userService.setRole(admin, Role.ADMIN.toString());
@@ -220,20 +218,27 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
                 String command = message.getText().substring
                         (commandEntity.get().getOffset(), commandEntity.get().getLength());
                 switch (command) {
-                    case "/start" ->
+                    case "/start":
                         caseStart(message);
-                    case "/setadminname" ->
+                        break;
+                    case "/setadminname":
                         botAnswerWithCommand(message,"Введи Имя и Фамилию:", Command.SETADMINNAME);
-                    case "/registration" ->
+                        break;
+                    case "/registration":
                         botAnswerWithCommand(message, "Введи уникальный код клиента:", Command.REGISTRATION);
-                    case "/setusername" ->
+                        break;
+                    case "/setusername":
                         botAnswerWithCommand(message, "Введи Имя и Фамилию клиента:", Command.SETUSERNAME);
-                    case "/setrole" ->
+                        break;
+                    case "/setrole":
                         caseSetRole(message);
-                    case "/setgroup" ->
+                        break;
+                    case "/setgroup":
                         caseSetGroup(message);
-                    case "/setreport" ->
+                        break;
+                    case "/setreport":
                         botAnswerWithCommand(message, "Жду трекинг:", Command.SETREPORT);
+                        break;
                 }
             }
         } else if (message.hasText() && !message.hasEntities() &&
@@ -423,6 +428,26 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
             );
         } catch (TelegramApiException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Метод отправляет лиду или лектору список студентов, которые не трекались 24 или 72 часа
+     * @param teacher лектор
+     * @param lead лид
+     * @param listOfUser список студентов, которые не затрекались
+     * @param time время, которое не трекались студенты
+     */
+    private void sendNotification(User teacher, User lead, List<User> listOfUser, String time) {
+       StringBuilder students = new StringBuilder();
+        for (User student : listOfUser) {
+            students.append(student.getUsername());
+            students.append("\n");
+        }
+        if (time.equals("24")) {
+            sendMessageToClient(lead.getChatId(), "Кто-то не затрекался! Напиши им:\n" + students);
+        } else if (time.equals("72")) {
+            sendMessageToClient(teacher.getChatId(), "Внимание! Студенты, которые не трекались 72 часа:\n" + students);
         }
     }
 }

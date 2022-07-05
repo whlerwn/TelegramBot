@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import router.Dispatcher;
 import service.CommandModeService;
 import service.ReportService;
 import service.RoleModeService;
@@ -161,7 +162,7 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      * @param chatId уникальный номер пользователя, которому бот будет отправлять сообщение
      * @param text сообщение, которое будет отправлено пользователю
      */
-    private void sendMessageToClient(String chatId, String text) {
+    public void sendMessageToClient(String chatId, String text) {
         try {
             execute(
                     SendMessage.builder()
@@ -261,7 +262,12 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      * @param message обрабатываемое сообщение
      */
     private void actionSetReport(Message message) {
-        reportService.setReport(report, message.getChatId().toString() ,message.getText());
+        reportService.setReport(report, message.getChatId().toString(), message.getText());
+
+        // TODO 1: change report entity
+        // TODO: maybe refactor
+        Dispatcher.dispatchReport(report);
+
         simpleBotAnswer(message, "Отчет сохранён. \uD83D\uDC4C\uD83C\uDFFB");
         System.out.println(report.toString());
     }
@@ -272,6 +278,10 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      */
     private void actionSetUserName(Message message) {
         userService.setUserName(client, message.getText());
+
+        // TODO: maybe refactor
+        Dispatcher.dispatchUser(message);
+
         simpleBotAnswer(message, "Записал! Идём дальше.");
     }
 

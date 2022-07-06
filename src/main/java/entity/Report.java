@@ -3,13 +3,9 @@ package entity;
 public class Report {
     private String chatId;
 
-    // TODO: change text -> description
-    private String text;
+    private String description;
+    private int timeInMinutes;
 
-    //TODO: uncomment
-    // private int timeInMinutes;
-
-    //TODO: generate getters and setters
     public Report() {
     }
 
@@ -21,19 +17,28 @@ public class Report {
         this.chatId = chatId;
     }
 
-    public String getText() {
-        return text;
+    public String getDescription() {
+        return description;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getTimeInMinutes() {
+        return timeInMinutes;
+    }
+
+    public void setTimeInMinutes(int timeInMinutes) {
+        this.timeInMinutes = timeInMinutes;
     }
 
     @Override
     public String toString() {
         return "Report{" +
                 "chatId='" + chatId + '\'' +
-                ", text='" + text + '\'' +
+                ", description='" + description + '\'' +
+                ", timeInMinutes=" + timeInMinutes +
                 '}';
     }
 }

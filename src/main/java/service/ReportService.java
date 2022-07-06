@@ -1,7 +1,6 @@
 package service;
 
 import entity.Report;
-import entity.User;
 import service.impl.ReportServiceImpl;
 
 public interface ReportService {
@@ -10,5 +9,6 @@ public interface ReportService {
         return new ReportServiceImpl();
     }
 
-    void setReport(Report report, String chatId, String text);
+    void setDescription(Report report, String chatId, String description);
+    void setTime(Report report, int time);
 }

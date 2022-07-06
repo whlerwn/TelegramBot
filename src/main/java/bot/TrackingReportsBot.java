@@ -5,11 +5,9 @@ import entity.Report;
 import entity.Role;
 import entity.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.MessageEntity;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -19,7 +17,7 @@ import service.ReportService;
 import service.RoleModeService;
 import service.UserService;
 
-import java.math.BigInteger;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -142,18 +140,22 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
         if (newRole == Role.TEACHER) {
             simpleBotAnswer(message, "На этом этапе регистрация лектора завершена. " +
                     "Клиент " + client.getUsername() + " теперь лектор. \uD83D\uDC68\u200D\uD83C\uDFEB" +
-                    "\nСейчас я напишу лектору об этом.");
+                    "\nСейчас я напишу ему об этом.");
             userService.setRole(client, Role.TEACHER.toString());
             sendMessageToClient(client.getChatId(), "Привет, " + client.getUsername() + ", ты зарегистрирован как лектор! " +
                     "Теперь тебе будет приходить каждый день в 22:00 отчёт об активностях студентов. " +
                     "А если студент не затрекался в течение 3 дней, я уведомлю тебя об этом.");
             System.out.println(client.toString());
         } else if (newRole == Role.LEAD) {
-            simpleBotAnswer(message, "Роль присвоена. Теперь " + client.getUsername() + " - лид. \uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB Не забудь добавить группу!");
+            simpleBotAnswer(message, "Роль присвоена. Теперь " + client.getUsername() + " - лид. \uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB");
             userService.setRole(client, Role.LEAD.toString());
+
+            caseSetGroup(message);
         } else if (newRole == Role.STUDENT) {
-            simpleBotAnswer(message, "Роль присвоена. Теперь " + client.getUsername() + " - студент. \uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB Не забудь добавить группу!");
+            simpleBotAnswer(message, "Роль присвоена. Теперь " + client.getUsername() + " - студент. \uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB");
             userService.setRole(client, Role.STUDENT.toString());
+
+            caseSetGroup(message);
         }
     }
 
@@ -187,17 +189,14 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
         roleModeService.setRole(message.getChatId(), newRole);
         System.out.println(message.getChatId());
         if (newRole == Role.ADMIN) {
-            simpleBotAnswer(message, "Теперь ты админ. Чтобы задать своё имя, используй команду /setadminname.\n" +
-                    "Как зарегистрировать клиента (выполнить поэтапно):\n" +
-                    "1. Команда /registration и ввод уникального номера клиента (получить при запуске бота клиентом)\n" +
-                    "2. Команда /setusername для ввода имени клиента\n" +
-                    "3. Команда /setrole для присвоения роли клиенту\n" +
-                    "4. Команда /setgroup для присвоения группы клиенту.\n" +
-                    "После этого клиент будет зарегистрирован.\n\n" +
-                    "*Остальные команды и их описание можно найти в меню или с помощью символа");
+            simpleBotAnswer(message, "Теперь ты - админ!");
+
             System.out.println(newRole);
+
             userService.setChatId(admin, String.valueOf(message.getChatId()));
             userService.setRole(admin, Role.ADMIN.toString());
+
+            botAnswerWithCommand(message, "Введи своё Имя и Фамилию:", Command.SETADMINNAME);
         } else if (newRole == Role.CLIENT) {
             simpleBotAnswer(message, "Твой уникальный код: " + message.getChatId().toString() +
                     ". Передай его администратору для регистрации.");
@@ -222,23 +221,11 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
                     case "/start":
                         caseStart(message);
                         break;
-                    case "/setadminname":
-                        botAnswerWithCommand(message,"Введи Имя и Фамилию:", Command.SETADMINNAME);
-                        break;
                     case "/registration":
                         botAnswerWithCommand(message, "Введи уникальный код клиента:", Command.REGISTRATION);
                         break;
-                    case "/setusername":
-                        botAnswerWithCommand(message, "Введи Имя и Фамилию клиента:", Command.SETUSERNAME);
-                        break;
-                    case "/setrole":
-                        caseSetRole(message);
-                        break;
-                    case "/setgroup":
-                        caseSetGroup(message);
-                        break;
                     case "/setreport":
-                        botAnswerWithCommand(message, "Жду трекинг:", Command.SETREPORT);
+                        botAnswerWithCommand(message, "Напиши, что сегодня было сделано:", Command.SETREPORT);
                         break;
                 }
             }
@@ -253,7 +240,10 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
             actionSetUserName(message);
         } else if (message.hasText() && !message.hasEntities()
                 && commandModeService.getCommand(message.getChatId()) == Command.SETREPORT) {
-            actionSetReport(message);
+            actionSetReportDescription(message);
+        } else if (message.hasText() && !message.hasEntities()
+                && commandModeService.getCommand(message.getChatId()) == Command.SETTIMEREPORT) {
+            actionSetReportTime(message);
         }
     }
 
@@ -261,8 +251,14 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      * Метод сохраняет отчет (текст и уникальный номер пользователя, кто пишет отчет)
      * @param message обрабатываемое сообщение
      */
-    private void actionSetReport(Message message) {
-        reportService.setReport(report, message.getChatId().toString(), message.getText());
+    private void actionSetReportDescription(Message message) {
+        reportService.setDescription(report, message.getChatId().toString(), message.getText());
+        botAnswerWithCommand(message, "Сколько времени было потрачено? Напиши в минутах:", Command.SETTIMEREPORT);
+
+    }
+
+    private void actionSetReportTime(Message message) {
+        reportService.setTime(report, Integer.parseInt(message.getText()));
 
         // TODO 1: change report entity
         // TODO: maybe refactor
@@ -282,7 +278,9 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
         // TODO: maybe refactor
         Dispatcher.dispatchUser(message);
 
-        simpleBotAnswer(message, "Записал! Идём дальше.");
+        simpleBotAnswer(message, "Записал!");
+        caseSetRole(message);
+
     }
 
     /**
@@ -291,8 +289,8 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      */
     private void actionRegistration(Message message) {
         userService.setChatId(client, subSringChatId(message.getText()));
-        simpleBotAnswer(message, "Пользователь с ID " + client.getChatId()
-                + " найден. Можно регистрировать дальше.");
+        simpleBotAnswer(message, "Пользователь с ID " + client.getChatId() + " найден.");
+        botAnswerWithCommand(message, "Введи Имя и Фамилию клиента:", Command.SETUSERNAME);
     }
 
     /**
@@ -316,6 +314,8 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
     private void actionSetAdminName(Message message) {
         userService.setUserName(admin, message.getText());
         simpleBotAnswer(message, "Отлично, " + admin.getUsername() +", я запомнил твоё имя. \uD83D\uDC4D\uD83C\uDFFB");
+        simpleBotAnswer(message, "Чтобы зарегистрировать клиента, используй команду /registration и следуй моим инструкциям," +
+                "пока я не скажу, что регистрация завершена.");
     }
 
     /**
@@ -435,6 +435,18 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
                             .chatId(message.getChatId().toString())
                             .text(text)
                             .build()
+            );
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendFile(File file, String chatId) {
+        try {
+            execute(SendDocument.builder()
+                    .chatId(chatId)
+                    .document(new InputFile(file))
+                    .build()
             );
         } catch (TelegramApiException e) {
             e.printStackTrace();

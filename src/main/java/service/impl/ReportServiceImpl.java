@@ -6,8 +6,13 @@ import service.ReportService;
 public class ReportServiceImpl implements ReportService {
 
     @Override
-    public void setReport(Report report, String chatId, String text) {
-        report.setText(text);
+    public void setDescription(Report report, String chatId, String description) {
+        report.setDescription(description);
         report.setChatId(chatId);
+    }
+
+    @Override
+    public void setTime(Report report, int time) {
+        report.setTimeInMinutes(time);
     }
 }

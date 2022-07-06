@@ -115,7 +115,7 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
         Message message = callbackQuery.getMessage();
         userService.setGroup(client, "BLUE");
         simpleBotAnswer(message, "На этом этапе регистрация клиента завершена. Сейчас напишу об этом клиенту!");
-        if (client.getRole().equals("LEAD")) {
+        if (client.getRole().equals("TEAMLEAD")) {
             sendMessageToClient(client.getChatId(),
                     "Привет, " + client.getUsername() + ", ты зарегистрирован как лид. " +
                             "Теперь ты можешь отправлять каждый день отчёт, используя команду /setreport. " +

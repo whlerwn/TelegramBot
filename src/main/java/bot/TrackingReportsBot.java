@@ -102,7 +102,7 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      */
     private boolean afterRegistrationHandleCallback(CallbackQuery callbackQuery) {
         Role role = Role.valueOf(callbackQuery.getData());
-        return role == Role.TEACHER || role == Role.LEAD || role == Role.STUDENT;
+        return role == Role.TEACHER || role == Role.TEAMLEAD || role == Role.STUDENT;
     }
 
     /**
@@ -146,9 +146,9 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
                     "Теперь тебе будет приходить каждый день в 22:00 отчёт об активностях студентов. " +
                     "А если студент не затрекался в течение 3 дней, я уведомлю тебя об этом.");
             System.out.println(client.toString());
-        } else if (newRole == Role.LEAD) {
+        } else if (newRole == Role.TEAMLEAD) {
             simpleBotAnswer(message, "Роль присвоена. Теперь " + client.getUsername() + " - лид. \uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB");
-            userService.setRole(client, Role.LEAD.toString());
+            userService.setRole(client, Role.TEAMLEAD.toString());
 
             caseSetGroup(message);
         } else if (newRole == Role.STUDENT) {
@@ -355,7 +355,7 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
                         .callbackData("TEACHER")
                         .build(),
                 InlineKeyboardButton.builder()
-                        .text(Role.LEAD.toString())
+                        .text(Role.TEAMLEAD.toString())
                         .callbackData("LEAD")
                         .build(),
                 InlineKeyboardButton.builder()

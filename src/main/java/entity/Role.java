@@ -1,7 +1,7 @@
 package entity;
 
 public enum Role {
-    ADMIN, CLIENT, TEACHER, TEAMLEAD, STUDENT;
+    ADMIN, CLIENT, TEACHER, TEAMLEAD, USER;
 
     Role() {
     }

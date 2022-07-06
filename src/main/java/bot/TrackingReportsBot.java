@@ -102,7 +102,7 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      */
     private boolean afterRegistrationHandleCallback(CallbackQuery callbackQuery) {
         Role role = Role.valueOf(callbackQuery.getData());
-        return role == Role.TEACHER || role == Role.TEAMLEAD || role == Role.STUDENT;
+        return role == Role.TEACHER || role == Role.TEAMLEAD || role == Role.USER;
     }
 
     /**
@@ -120,7 +120,7 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
                     "Привет, " + client.getUsername() + ", ты зарегистрирован как лид. " +
                             "Теперь ты можешь отправлять каждый день отчёт, используя команду /setreport. " +
                             "А если студент не затрекался в течение 24 часов, я уведомлю тебя об этом.");
-        } else if (client.getRole().equals("STUDENT")) {
+        } else if (client.getRole().equals("USER")) {
             sendMessageToClient(client.getChatId(),
                     "Привет, " + client.getUsername() + ", ты зарегистрирован как студент. " +
                             "Теперь ты можешь отправлять каждый день отчёт, используя команду /setreport.");
@@ -151,9 +151,9 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
             userService.setRole(client, Role.TEAMLEAD.toString());
 
             caseSetGroup(message);
-        } else if (newRole == Role.STUDENT) {
+        } else if (newRole == Role.USER) {
             simpleBotAnswer(message, "Роль присвоена. Теперь " + client.getUsername() + " - студент. \uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB");
-            userService.setRole(client, Role.STUDENT.toString());
+            userService.setRole(client, Role.USER.toString());
 
             caseSetGroup(message);
         }
@@ -355,12 +355,12 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
                         .callbackData("TEACHER")
                         .build(),
                 InlineKeyboardButton.builder()
-                        .text(Role.TEAMLEAD.toString())
-                        .callbackData("LEAD")
+                        .text("TEAMLEAD")
+                        .callbackData("TEAMLEAD")
                         .build(),
                 InlineKeyboardButton.builder()
-                        .text(Role.STUDENT.toString())
-                        .callbackData("STUDENT")
+                        .text("STUDENT")
+                        .callbackData("USER")
                         .build()));
         try {
             execute(

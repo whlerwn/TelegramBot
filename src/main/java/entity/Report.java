@@ -2,8 +2,14 @@ package entity;
 
 public class Report {
     private String chatId;
+
+    // TODO: change text -> description
     private String text;
 
+    //TODO: uncomment
+    // private int timeInMinutes;
+
+    //TODO: generate getters and setters
     public Report() {
     }
 

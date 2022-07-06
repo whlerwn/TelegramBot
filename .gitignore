@@ -8,6 +8,9 @@
 *.war
 *.ear
 
+# SOAP files
+soap/
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 .settings/
@@ -26,7 +29,6 @@ effective-settings.xml
 *.iml
 *.log
 *.lck
-*.jar
 */dependency-reduced-pom.xml
 node_modules
 .DS_Store

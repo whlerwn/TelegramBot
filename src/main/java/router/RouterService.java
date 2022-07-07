@@ -4,6 +4,8 @@ import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
 import jakarta.jws.soap.SOAPBinding;
 
+import java.io.File;
+
 
 @WebService
 @SOAPBinding(style = SOAPBinding.Style.RPC)
@@ -15,4 +17,8 @@ public interface RouterService {
      */
     @WebMethod
     String sendNotification(String untrackedUsers);
+
+    // TODO: javadoc
+    @WebMethod
+    String sendReport(String stream);
 }

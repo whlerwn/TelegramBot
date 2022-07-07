@@ -3,57 +3,61 @@ package router;
 import bot.TrackingReportsBot;
 import jakarta.jws.WebService;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Base64;
 
-
 @WebService(endpointInterface = "router.RouterServiceImpl")
 public class RouterServiceImpl implements RouterService {
-
 
     @Override
     public String sendNotification(String untrackedUsers) {
         // ilya 497542778
         // valeria 296732256
-        // ramzan 880825037
+        // ramzan 880825037 - teamlead
         // maria 261927286
         // margarita 355086790
         // yaroslav 790376269
-        // TODO: change chatId to TEAMLEAD or TEACHER
-        String chatId = "880825037";
+        // konstantin 670159425 - teacher
+        // TODO: HARDCODED, change chatId to TEAMLEAD
+        //       either in bot(call database) or notificator(passed parameter)
+        String chatId = "497542778";
 
-        TrackingReportsBot trb = new TrackingReportsBot(); // TODO: maybe consider refactoring to static?
-        trb.sendMessageToClient(chatId, untrackedUsers);
+        TrackingReportsBot telegramBot = new TrackingReportsBot();
+        telegramBot.sendMessageToClient(chatId, untrackedUsers);
+
+        System.out.println("Received notification.");
 
         return "Success";
     }
 
     @Override
     public String sendReport(String stream) {
+        File file = saveIncomingFile(stream);
+        // TODO: HARDCODED, change chatId to TEACHER
+        String chatId = "497542778";
 
-        // TODO: teacher
-        String chatId = "880825037";
+        TrackingReportsBot telegramBot = new TrackingReportsBot();
+        telegramBot.sendFile(file, chatId);
 
-        // TODO: resolve path
-        File file = new File("C:\\Users\\ilya\\IdeaProjects\\TelegramBot\\src\\main\\java\\soap\\report.pdf");
-
-        try {
-            byte[] decode = Base64.getDecoder().decode(stream);
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
-            bos.write(decode);
-            bos.close();
-        }
-        catch (Exception e) {
-            System.out.println("ERROR: " + Arrays.toString(e.getStackTrace()));
-        }
-
-        TrackingReportsBot trb = new TrackingReportsBot(); // TODO: maybe consider refactoring to static?
-        trb.sendFile(file, chatId);
+        System.out.println("Received report.");
 
         return "Success";
+    }
+
+    private File saveIncomingFile(String stream) {
+        // TODO: check path correctness
+        File file = new File("src/main/java/soap/report.pdf");
+
+        byte[] decode = Base64.getDecoder().decode(stream);
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));) {
+            bos.write(decode);
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found error." + Arrays.toString(e.getStackTrace()));
+        } catch (IOException e) {
+            System.out.println("I/O error." + Arrays.toString(e.getStackTrace()));
+        }
+        return file;
     }
 
 }

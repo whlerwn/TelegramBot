@@ -2,6 +2,7 @@ package router;
 
 import com.google.gson.Gson;
 import entity.Report;
+import entity.User;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import soap.CommandImplService;
 
@@ -17,20 +18,18 @@ public class Dispatcher {
     /**
      * Sends user's data to command service
      *
-     * @param message - telegram message
+     * @param client - user entity
      */
-    public static void dispatchUser(Message message) {
+    public static void dispatchUser(User client) {
         CommandImplService command = new CommandImplService();
         soap.Command commandI = command.getCommandImplPort();
 
         soap.User user = new soap.User();
-        user.setChatId(message.getChatId().toString());
-        user.setFullName(message.getText());
-        // TODO: hardcoded GROUP
-        user.setGroup("Blue");
+        user.setChatId(client.getChatId());
+        user.setFullName(client.getUsername());
+        user.setGroup(client.getGroup());
 
-        // TODO: hardcoded ROLE
-        commandI.saveUser(user, "USER");
+        commandI.saveUser(user, client.getRole());
     }
 
     /**

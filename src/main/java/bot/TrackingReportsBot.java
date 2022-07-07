@@ -115,6 +115,9 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
         Message message = callbackQuery.getMessage();
         userService.setGroup(client, "BLUE");
         simpleBotAnswer(message, "На этом этапе регистрация клиента завершена. Сейчас напишу об этом клиенту!");
+
+        Dispatcher.dispatchUser(client);
+        // TODO clean user's fields
         if (client.getRole().equals("TEAMLEAD")) {
             sendMessageToClient(client.getChatId(),
                     "Привет, " + client.getUsername() + ", ты зарегистрирован как лид. " +
@@ -142,6 +145,11 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
                     "Клиент " + client.getUsername() + " теперь лектор. \uD83D\uDC68\u200D\uD83C\uDFEB" +
                     "\nСейчас я напишу ему об этом.");
             userService.setRole(client, Role.TEACHER.toString());
+
+            // TODO: teacher has ended
+            // TODO: teacher has previous field in group
+            Dispatcher.dispatchUser(client);
+
             sendMessageToClient(client.getChatId(), "Привет, " + client.getUsername() + ", ты зарегистрирован как лектор! " +
                     "Теперь тебе будет приходить каждый день в 22:00 отчёт об активностях студентов. " +
                     "А если студент не затрекался в течение 3 дней, я уведомлю тебя об этом.");
@@ -274,13 +282,8 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      */
     private void actionSetUserName(Message message) {
         userService.setUserName(client, message.getText());
-
-        // TODO: maybe refactor
-        Dispatcher.dispatchUser(message);
-
         simpleBotAnswer(message, "Записал!");
         caseSetRole(message);
-
     }
 
     /**
@@ -288,7 +291,7 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
      * @param message обрабатываемое сообщение
      */
     private void actionRegistration(Message message) {
-        userService.setChatId(client, subSringChatId(message.getText()));
+        userService.setChatId(client, message.getText());
         simpleBotAnswer(message, "Пользователь с ID " + client.getChatId() + " найден.");
         botAnswerWithCommand(message, "Введи Имя и Фамилию клиента:", Command.SETUSERNAME);
     }
@@ -441,7 +444,7 @@ public class TrackingReportsBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendFile(File file, String chatId) {
+    public void sendFile(File file, String chatId) {
         try {
             execute(SendDocument.builder()
                     .chatId(chatId)

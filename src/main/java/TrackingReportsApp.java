@@ -13,6 +13,6 @@ public class TrackingReportsApp {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-       Endpoint.publish("http://localhost:8081/", new RouterServiceImpl());
+        Endpoint.publish("http://localhost:8081/", new RouterServiceImpl());
     }
 }
